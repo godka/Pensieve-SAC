@@ -7,7 +7,7 @@ ACTION_EPS = 1e-4
 GAMMA = 0.99
 MAX_POOL_NUM = 500000
 TAU = 5e-3
-Q_NETWORK_COUNT = 2
+Q_NETWORK_COUNT = 5
 Target_entropy_ratio = 0.98
 
 class Network():
@@ -79,7 +79,7 @@ class Network():
         })
 
     def __init__(self, sess, state_dim, action_dim, learning_rate):
-        self._entropy = 1.7
+        self.entropy_ = 2.
         self.s_dim = state_dim
         self.a_dim = action_dim
         self.lr_rate = learning_rate
@@ -187,7 +187,10 @@ class Network():
             self.lr_rate).minimize(self.sac_loss)
 
     def get_entropy(self, step):
-        return np.clip(6. - float(step) / 20000., 1e-3, 6.)
+        return np.clip(self.entropy_, 1e-10, 2.)
+    
+    def entropy_decay(self, decay=0.9):
+        self.entropy_ *= decay
 
     def predict(self, input):
         action = self.sess.run(self.pi, feed_dict={

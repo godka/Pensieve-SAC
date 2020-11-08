@@ -101,6 +101,8 @@ def central_agent(net_params_queues, exp_queues):
             saver.restore(sess, nn_model)
             print("Model restored.")
 
+        max_reward, max_epoch = -10000., 0
+        tick_gap = 0
         # while True:  # assemble experiences from agents, compute the gradients
         for epoch in range(TRAIN_EPOCH):
             # synchronize the network parameters of work agent
@@ -132,6 +134,17 @@ def central_agent(net_params_queues, exp_queues):
                 avg_reward, avg_entropy = testing(epoch,
                     SUMMARY_DIR + "/nn_model_ep_" + str(epoch) + ".ckpt", 
                     test_log_file)
+
+                if avg_reward > max_reward:
+                    max_reward = avg_reward
+                    max_epoch = epoch
+                    tick_gap = 0
+                else:
+                    tick_gap += 1
+
+                if tick_gap >= 5:
+                    actor.entropy_decay()
+                    tick_gap = 0
 
                 summary_str = sess.run(summary_ops, feed_dict={
                     summary_vars[0]: actor.get_entropy(epoch),
