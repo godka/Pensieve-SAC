@@ -7,7 +7,7 @@ ACTION_EPS = 1e-4
 GAMMA = 0.99
 MAX_POOL_NUM = 500000
 TAU = 5e-3
-Q_NETWORK_COUNT = 5
+Q_NETWORK_COUNT = 2
 Target_entropy_ratio = 0.98
 
 class Network():
@@ -189,7 +189,7 @@ class Network():
     def get_entropy(self, step):
         return np.clip(self.entropy_, 1e-10, 2.)
     
-    def entropy_decay(self, decay=0.9):
+    def entropy_decay(self, decay=0.95):
         self.entropy_ *= decay
 
     def predict(self, input):
@@ -206,27 +206,27 @@ class Network():
                 pop_item = np.random.randint(len(self.pool))
                 self.pool.pop(pop_item)
 
-        # if len(self.pool) > 10000:
-        s_batch, a_batch, r_batch = [], [], []
-        ns_batch, d_batch = [], []
+        if len(self.pool) > 10000:
+            s_batch, a_batch, r_batch = [], [], []
+            ns_batch, d_batch = [], []
 
-        for p in range(1024):
-            pop_item = np.random.randint(len(self.pool))
-            s_, a_, r_, n_, d_ = self.pool[pop_item]
-            s_batch.append(s_)
-            a_batch.append(a_)
-            r_batch.append(r_)
-            ns_batch.append(n_)
-            d_batch.append(d_)
+            for p in range(1024):
+                pop_item = np.random.randint(len(self.pool))
+                s_, a_, r_, n_, d_ = self.pool[pop_item]
+                s_batch.append(s_)
+                a_batch.append(a_)
+                r_batch.append(r_)
+                ns_batch.append(n_)
+                d_batch.append(d_)
 
-        self.sess.run(self.sac_opt, feed_dict={
-            self.inputs: s_batch,
-            self.acts: a_batch,
-            self.r: r_batch,
-            self.done: d_batch,
-            self.next_state: ns_batch,
-            self.alpha: self.get_entropy(epoch)
-        })
+            self.sess.run(self.sac_opt, feed_dict={
+                self.inputs: s_batch,
+                self.acts: a_batch,
+                self.r: r_batch,
+                self.done: d_batch,
+                self.next_state: ns_batch,
+                self.alpha: self.get_entropy(epoch)
+            })
 
-        self.sess.run(self.pi_soft_update)
-        self.sess.run(self.q_soft_update_s)
+            self.sess.run(self.pi_soft_update)
+            self.sess.run(self.q_soft_update_s)
