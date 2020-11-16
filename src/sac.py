@@ -167,21 +167,14 @@ class Network():
         for idx, param in enumerate(self.input_network_params):
             self.set_network_params_op.append(
                 self.network_params[idx].assign(param))
-                
-        self.q_test = tf.reduce_sum(tf.multiply(self.q_eval_s[0], self.acts), reduction_indices=1, keepdims=True)
+
+        self.pi_loss = - tf.reduce_mean(self.alpha * self.entropy + tf.reduce_sum(tf.multiply(self.pi, tf.stop_gradient(self.min_q_eval)), reduction_indices=1, keepdims=True))
+        self.sac_loss = self.pi_loss
         if len(self.q_eval_s) > 0:
-            self.q_loss = tflearn.mean_square(
-                tf.reduce_sum(tf.multiply(self.q_eval_s[0], self.acts), reduction_indices=1, keepdims=True),
-                tf.stop_gradient(self.q_target))
-            for t in range(1, len(self.q_eval_s)):
-                self.q_loss += tflearn.mean_square(
+            for t in range(len(self.q_eval_s)):
+                self.sac_loss += 0.5 * tflearn.mean_square(
                     tf.reduce_sum(tf.multiply(self.q_eval_s[t], self.acts), reduction_indices=1, keepdims=True),
                     tf.stop_gradient(self.q_target))
-
-        self.pi_loss = - tf.reduce_sum(self.alpha * self.entropy + tf.reduce_sum(tf.multiply(self.pi, tf.stop_gradient(self.min_q_eval)), reduction_indices=1, keepdims=True))
-        # self.alpha_backup = tf.stop_gradient(-self.entropy + self.target_entropy)
-        # self.alpha_loss = tf.reduce_mean(self.alpha * self.alpha_backup)
-        self.sac_loss = self.pi_loss + self.q_loss # + self.alpha_loss
 
         self.sac_opt = tf.train.AdamOptimizer(
             self.lr_rate).minimize(self.sac_loss)
@@ -189,7 +182,7 @@ class Network():
     def get_entropy(self, step):
         return np.clip(self.entropy_, 1e-10, 2.)
     
-    def entropy_decay(self, decay=0.95):
+    def entropy_decay(self, decay=0.9):
         self.entropy_ *= decay
 
     def predict(self, input):
