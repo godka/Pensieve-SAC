@@ -113,7 +113,7 @@ class Network():
                 tf.GraphKeys.TRAINABLE_VARIABLES, scope='pi_target')
         self.pi_soft_update = [tf.assign(ta, ea)
                                for ta, ea in zip(self.pi_target_params, self.pi_params)]
-
+        # mean
         self.entropy = - tf.reduce_sum(tf.multiply(self.pi, tf.log(self.pi)), reduction_indices=1, keepdims=True)
 
         self.q_eval_s, self.q_target_s, self.q_soft_update_s = [], [], []
@@ -180,9 +180,9 @@ class Network():
             self.lr_rate).minimize(self.sac_loss)
 
     def get_entropy(self, step):
-        return np.clip(self.entropy_, 1e-10, 2.)
+        return np.clip(self.entropy_, 1e-10, 5.)
     
-    def entropy_decay(self, decay=0.9):
+    def entropy_decay(self, decay=0.98):
         self.entropy_ *= decay
 
     def predict(self, input):

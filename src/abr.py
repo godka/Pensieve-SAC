@@ -86,7 +86,6 @@ class ABREnv():
             - REBUF_PENALTY * rebuf \
             - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[bit_rate] -
                                       VIDEO_BIT_RATE[self.last_bit_rate]) / M_IN_K
-
         self.last_bit_rate = bit_rate
         state = np.roll(self.state, -1, axis=1)
 

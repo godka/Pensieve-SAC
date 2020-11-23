@@ -142,7 +142,7 @@ def central_agent(net_params_queues, exp_queues):
                 else:
                     tick_gap += 1
 
-                if tick_gap >= 5:
+                if tick_gap >= 2:
                     actor.entropy_decay()
                     tick_gap = 0
 
