@@ -3,7 +3,7 @@
 ## About Pensive-SAC
 
 This is a TensorFlow implementation of Pensieve[1]. 
-We trained Pensieve via state-of-the-art reinforcement learning method, i.e., SAC.
+We trained Pensieve via state-of-the-art reinforcement learning method, i.e., Soft Actor Critic (SAC).
 It's a stable version, which has already prepared the training set and the test set, and you can run the repo easily: just type
 
 ```
